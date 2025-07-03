@@ -1,4 +1,4 @@
-package com.study.kotlinadvanced.lesson01
+package com.study.kotlinadvanced.section01
 
 fun main() {
     // ☑️ ️Cage에 잉어를 넣은 후 빼보자
@@ -23,11 +23,10 @@ fun main() {
     // 제네릭 적용 - 금붕어, 잉어를 넣는 Cage를 각각 구성
     val cage_carp = Cage2<Carp>()
     cage_carp.put(Carp("잉어"))
-    val carp4: Carp = cage_carp.getFirst() // 💡 SUCCESS
+    val carp4: Carp = cage_carp.getFirst() // 💡SUCCESS
 
     // ☑️ ️금붕어 Cage에 금붕어 한 마리를 넣고, 물고기 Cage에 금붕어를 옮겨보자
     // -> moveFrom 메소드 사용
-
     val goldFishCage = Cage2<GoldFish>()
     goldFishCage.put(GoldFish("금붕어"))
 
@@ -48,7 +47,30 @@ fun main() {
     //  - 상위/하위타입을 구성
     //  - 제네릭 타입 앞에 "out"을 붙여주면 타입 클래스의 상속관계가 제네릭까지 이어지게 됨
     //    => out : variance annotation (변성 어노테이션)
-    fishCage.moveFrom2(goldFishCage) // 💡 SUCCESS
+    fishCage.moveFrom2(goldFishCage) // 💡SUCCESS
+
+
+    val fishCage2 = Cage2<Fish>()
+    val goldFishCage2 = Cage2<GoldFish>()
+    goldFishCage2.put(GoldFish("금붕어"))
+    //goldFishCage2.moveTo(fishCage2) // ⚠️ERROR : Type mismatch 발생
+    // -> Case2<Fish> => Cage2<GoldFish> 로 넣으려고 하기 때문 (상위타입 => 하위타입)
+
+    // ❓ 에러를 어떻게 해결할 수 있을까?
+    // 1. moveTo 함수 호출 시 Cage2<Fish>와 Cage2<GoldFish> 사이의 관계를 만들어주자
+    //  - 상위/하위타입을 반대로 구성
+    //  - 제네릭 타입 앞에 "in"을 붙여주면 타입 클래스의 상속관계가 반대로 됨
+    //  - 반공변(contra-variant)하게 만들어야 한다
+    //    => "in" 사용
+    goldFishCage2.moveTo2(fishCage2) // 💡SUCCESS
+
+    // ✔️ 정리하면 "out" : 생산자, 공변 / "in" : 소비자, 반공변
+    // -> 단, 함수 파라미터 입장에서 해당 역할이 성립됨
+    // -> 아래와 같이 변수 선언 시 moveFrom, moveTo에 설정한 관계가 적용되지 않음
+    // -> 공변/반공변 관계 설정을 위해서는 변수에 in/out 입력 필요
+    //val cage3: Cage2<Fish> = Cage2<GoldFish>() // ⚠️ERROR
+    val cage4: Cage2<out Fish> = Cage2<GoldFish>() // 💡SUCCESS
+    val cage5: Cage2<in GoldFish> = Cage2<Fish>() // 💡SUCCESS
 }
 
 class Cage {
@@ -83,7 +105,23 @@ class Cage2<T> {
         this.animals.addAll(cage.animals)
     }
 
-    fun moveFrom2(cage: Cage2<out T>) {
-        this.animals.addAll(cage.animals)
+    fun moveFrom2(otherCage: Cage2<out T>) {
+        // "out"을 붙이면 데이터를 꺼낼 수만 있음
+        // => 생산자 역할만 가능
+        otherCage.getFirst()
+        otherCage.animals
+        //otherCage.put(Carp("잉어")) // ⚠️ERROR
+        //otherCage.put(this.getFirst()) // ⚠️ERROR
+        this.animals.addAll(otherCage.animals)
+    }
+
+    fun moveTo(otherCage: Cage2<T>) {
+        otherCage.animals.addAll(this.animals)
+    }
+
+    fun moveTo2(otherCage: Cage2<in T>) {
+        // "in"을 붙이면 데이터를 넣을 수만 있음
+        // => 소비자 역할만 가능
+        otherCage.animals.addAll(this.animals)
     }
 }
