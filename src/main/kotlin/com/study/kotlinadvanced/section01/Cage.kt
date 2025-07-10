@@ -2,7 +2,7 @@ package com.study.kotlinadvanced.section01
 
 fun main() {
     // ☑️ ️Cage에 잉어를 넣은 후 빼보자
-    // => getFirst 메소드 사용
+    // -> getFirst 메소드 사용
     val cage = Cage()
     cage.put(Carp("잉어"))
     //val carp: Carp = cage.getFirst() // ⚠️ERROR : Type mismatch 발생
@@ -71,6 +71,16 @@ fun main() {
     //val cage3: Cage2<Fish> = Cage2<GoldFish>() // ⚠️ERROR
     val cage4: Cage2<out Fish> = Cage2<GoldFish>() // 💡SUCCESS
     val cage5: Cage2<in GoldFish> = Cage2<Fish>() // 💡SUCCESS
+
+    // ☑️ Cage 자체를 공변하게 만들 수는 없을까?
+    // -> Cage 클래스를 생산만 하는 클래스로 만들기 (Cage3)
+    // -> 클래스 제네릭 자체에 out 붙이기 (out 붙이면 생산만 가능)
+    val fishCage4 = Cage3<Fish>()
+    val animalCage4: Cage3<Animal> = fishCage4
+
+    // -> 반대도 가능 (소비만 하는 클래스)
+    val animalCage5 = Cage4<Animal>()
+    val fishCage5: Cage4<Fish> = animalCage5
 }
 
 class Cage {
@@ -123,5 +133,33 @@ class Cage2<T> {
         // "in"을 붙이면 데이터를 넣을 수만 있음
         // => 소비자 역할만 가능
         otherCage.animals.addAll(this.animals)
+    }
+}
+
+// 생산만 하는 클래스
+// => 이 경우 클래스 자체를 공변하게 만들 수 있음
+// => 상위타입에 하위타입 삽입 시 동작 가능하게 만들 수 있음
+class Cage3<out T> {
+    private val animals: MutableList<T> = mutableListOf()
+
+    fun getFirst(): T {
+        return this.animals.first()
+    }
+
+    fun getAll(): List<T> {
+        return this.animals
+    }
+}
+
+// 소비만 하는 클래스
+class Cage4<in T> {
+    private val animals: MutableList<T> = mutableListOf()
+
+    fun put(animal: T) {
+        this.animals.add(animal)
+    }
+
+    fun putAll(animals: List<T>) {
+        this.animals.addAll(animals)
     }
 }
