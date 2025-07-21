@@ -81,6 +81,16 @@ fun main() {
     // -> 반대도 가능 (소비만 하는 클래스)
     val animalCage5 = Cage4<Animal>()
     val fishCage5: Cage4<Fish> = animalCage5
+
+    // ☑️ 제네릭 제약을 통한 Bird 구현
+    val cage7 = Cage6(mutableListOf(Eagle(), Sparrow()))
+    // 크기순 정렬
+    cage7.printAfterSorting()
+
+    // 제네릭 제약을 Non-null 한정에 사용하기
+    //Cage2<GoldFish?>() // ⚠️ERROR
+    // => Cage2<T : Any>
+    // => Any 적용 시 Non-null 한정으로 변경
 }
 
 class Cage {
@@ -100,7 +110,7 @@ class Cage {
 }
 
 // 제네릭을 적용한 Cage
-class Cage2<T> {
+class Cage2<T : Any> {
     private val animals: MutableList<T> = mutableListOf()
 
     fun getFirst(): T {
@@ -162,4 +172,66 @@ class Cage4<in T> {
     fun putAll(animals: List<T>) {
         this.animals.addAll(animals)
     }
+}
+
+// 제네릭 제약
+class Cage5<T : Animal> {
+    private val animals: MutableList<T> = mutableListOf()
+
+    fun getFirst(): T {
+        return animals.first()
+    }
+
+    fun put(animal: T) {
+        this.animals.add(animal)
+    }
+
+    fun moveFrom(cage: Cage5<T>) {
+        this.animals.addAll(cage.animals)
+    }
+}
+
+// 제네릭 제약, 제한조건 여러개
+class Cage6<T> (
+    private val animals: MutableList<T> = mutableListOf()
+) where T : Animal, T : Comparable<T> {
+    fun printAfterSorting() {
+        this.animals.sorted()
+            .map { it.name }
+            .let { println(it) }
+    }
+
+    fun getFirst(): T {
+        return animals.first()
+    }
+
+    fun put(animal: T) {
+        this.animals.add(animal)
+    }
+}
+
+abstract class Bird(
+    name: String,
+    private val size: Int,
+) : Animal(name), Comparable<Bird> {
+    override fun compareTo(other: Bird): Int {
+        return this.size.compareTo(other.size)
+    }
+}
+
+class Sparrow : Bird("참새", 100)
+class Eagle : Bird("독수리", 500)
+
+// 제네릭 함수로 변환하기
+// BEFORE
+fun List<String>.hasIntersection(other: List<String>): Boolean {
+    // intersect : 교집합인지 비교
+    return (this.toSet() intersect other.toSet()).isNotEmpty()
+}
+
+// AFTER
+// List<String>, List<Int> 모두 활용 가능
+fun <T> List<T>.hasIntersection(other: List<T>): Boolean {
+    // intersect : 교집합인지 비교
+    return (this.toSet() intersect other.toSet()).isNotEmpty()
 }
