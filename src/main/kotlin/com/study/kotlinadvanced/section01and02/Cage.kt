@@ -1,4 +1,4 @@
-package com.study.kotlinadvanced.section01
+package com.study.kotlinadvanced.section01and02
 
 fun main() {
     // ☑️ ️Cage에 잉어를 넣은 후 빼보자

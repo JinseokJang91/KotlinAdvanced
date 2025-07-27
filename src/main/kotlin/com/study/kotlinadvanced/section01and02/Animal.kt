@@ -1,4 +1,4 @@
-package com.study.kotlinadvanced.section01
+package com.study.kotlinadvanced.section01and02
 
 abstract class Animal(
     val name: String,
